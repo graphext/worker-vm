@@ -6,6 +6,13 @@ export interface ConsoleEvent extends CustomEvent {
   };
 }
 
+export interface DenoOptions {
+  permissions: {
+    read: string[];
+    write: string[];
+  };
+}
+
 export interface VMEventMap {
   console: ConsoleEvent;
 }
@@ -50,14 +57,13 @@ export class VM extends EventTarget implements VMEventTarget {
    * Create a new worker VM instance.
    *
    * @param timeoutMs Timeout for each run() call in milliseconds. Default: 30 seconds.
+   * @param deno Deno options.
    */
-  constructor({timeoutMs = 30 * 1000}: {timeoutMs?: number} = {}) {
+  constructor({timeoutMs = 30 * 1000, deno}: {timeoutMs?: number, deno?: DenoOptions} = {}) {
     super();
     this.worker = new Worker(new URL("./worker.ts", import.meta.url), {
       type: "module",
-      deno: {
-        permissions: "none"
-      }
+      deno: deno
     });
     this.worker.addEventListener("message", (e) => {
       if (e.data.type === "console") {
